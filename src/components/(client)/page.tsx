@@ -1,17 +1,20 @@
-// import { getUserObject } from "@/app/client-functions/get-user-object";
-// import { checkExternalAccount } from "@/app/client-functions/check-external-account";
-import NoConnections from "@/components/(client)/no-connections";
-// import getPlaylists from "@/app/client-functions/shared/get-playlists";
-// import Playlists from "@/app/(client)/client/playlists";
+import ClientAccountCards from "@/components/(client)/accounts/client-account-cards";
+import { useSelector } from "react-redux";
+import { ReduxState } from "@/store.ts";
+import { isLoggedIn as appleIsLoggedIn } from "@/client-functions/apple/apple-auth";
+import Playlists from "@/components/(client)/playlists";
 
 
 export default function AppHome() {
-    // const userObj = await getUserObject();
-    // const spotifyAccount = await checkExternalAccount(userObj, "oauth_spotify");
-    // const appleAccount = await checkExternalAccount(userObj, "oauth_apple");
-    // const initialPlaylists = await getPlaylists(userObj);
+    const spotifyToken: string = useSelector<ReduxState>(state => state.spotify.accessToken) as string;
+    const spotifyLoggedIn = !!spotifyToken && spotifyToken !== "";
+    const appleLoggedIn = appleIsLoggedIn();
 
-    return <NoConnections />;
+    if (!spotifyLoggedIn && !appleLoggedIn) {
+        return <ClientAccountCards />;
+    }
+    return <Playlists initialPlaylists={{ apple: [], spotify: [] }} />;
+
     // if ((!spotifyAccount || spotifyAccount.externalId === "") && (!appleAccount || appleAccount.externalId === "")) {
     //     return <NoConnections />;
     // }

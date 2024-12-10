@@ -3,24 +3,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { SignedIn } from "@clerk/clerk-react";
-// import { getUserObject } from "@/app/client-functions/get-user-object";
-// import { checkExternalAccount } from "@/app/client-functions/check-external-account";
+import { useSelector } from "react-redux";
+import { ReduxState } from "@/store";
+import { isLoggedIn as appleIsLoggedIn } from "@/client-functions/apple/apple-auth";
 
 
 const ClientAccountCards = () => {
-    // const userObj = await getUserObject();
-    // const spotifyAccount = await checkExternalAccount(userObj, "oauth_spotify");
-    // const appleAccount = await checkExternalAccount(userObj, "oauth_apple");
-    // const spotifyAccountExists = spotifyAccount && spotifyAccount.externalId !== "";
-    // const appleAccountExists = appleAccount && appleAccount.externalId !== "";
-    const spotifyAccountExists = false;
-    const appleAccountExists = false;
+    const spotifyToken: string = useSelector<ReduxState>(state => state.spotify.accessToken) as string;
+    const spotifyLoggedIn = !!spotifyToken && spotifyToken !== "";
+    const appleLoggedIn = appleIsLoggedIn();
 
-    const spotifyButtonText = !spotifyAccountExists ? "Connect Spotify" : "Remove";
-    const spotifyDescription = !spotifyAccountExists ? "Connect your Spotify account to transfer playlists and liked songs." : ""; // spotifyAccount.emailAddress;
+    const spotifyButtonText = !spotifyLoggedIn ? "Connect Spotify" : "Remove";
+    const spotifyDescription = !spotifyLoggedIn ? "Connect your Spotify account to transfer playlists and liked songs." : ""; // spotifyAccount.emailAddress;
 
-    const appleButtonText = !appleAccountExists ? "Connect Apple" : "Remove";
-    const appleDescription = !appleAccountExists ? "Link your Apple Music account to sync your library and playlists." : ""; // appleAccount.emailAddress;
+    const appleButtonText = !appleLoggedIn ? "Connect Apple" : "Remove";
+    const appleDescription = !appleLoggedIn ? "Link your Apple Music account to sync your library and playlists." : ""; // appleAccount.emailAddress;
 
     return (
         <main className="flex-1 p-8">
@@ -42,8 +39,7 @@ const ClientAccountCards = () => {
                                              alt="spotify logo"/>}
                                 description={spotifyDescription}
                                 buttonText={spotifyButtonText}
-                                // linked={spotifyAccount !== null}
-                                linked={false}
+                                linked={spotifyLoggedIn}
                             />
                             <AccountCard
                                 title="Apple Music"
@@ -52,8 +48,7 @@ const ClientAccountCards = () => {
                                     height={50} width={50} className="h-8 w-8 text-gray-300" alt="apple logo"/>}
                                 description={appleDescription}
                                 buttonText={appleButtonText}
-                                // linked={appleAccount !== null}
-                                linked={false}
+                                linked={appleLoggedIn}
                             />
                         </div>
                         <div className="text-center mt-8">

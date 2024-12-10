@@ -1,24 +1,20 @@
-const instance = window.MusicKit;
-const key = "";
+import axios from "axios";
+import getApiHeaders from "@/client-functions/get-api-headers.ts";
 
-/**
- * Configure the MusicKit library using the developer token,
- * the call to the server for the token passes a key that the server is expecting
- * if you don't upload the key, the server will not return a result
- * @param {String} token
- */
-export async function configure(token: string) {
-    const serverurl = "http://localhost:8888/token?key="+key;
-    await fetch(serverurl, {
-        mode: "cors",
+const instance = window.MusicKit;
+
+export function configure(clerkToken: string) {
+    const apiUrl = `${import.meta.env.VITE_API_URL}/apple-token`;
+    axios.get(apiUrl, {
+        headers: getApiHeaders(clerkToken)
     })
-        .then(response => response.json())
         .then(res => {
-            console.log(res.token);
+            const appleToken: string = res?.data?.token;
+            console.log(appleToken);
             instance.configure({
-                developerToken: res.token,
+                developerToken: appleToken,
                 app: {
-                    name: "Playlist Converter",
+                    name: "Playlist Porter",
                     build: "1978.4.1"
                 }
             });
@@ -28,17 +24,10 @@ export async function configure(token: string) {
         });
 }
 
-/**
- * Return the Musickit instance
- */
 export function getMusicInstance() {
     return instance.getInstance();
 }
 
-
-/**
- * Return users login status
- */
 export function isLoggedIn() {
     try {
         return getMusicInstance().isAuthorized;
@@ -49,26 +38,19 @@ export function isLoggedIn() {
     }
 }
 
-/**
- * Authorizes a user and retrieves a user token
- */
 export function LogIn() {
     return getMusicInstance().authorize();
 }
 
-/**
- * Signs a User out
- */
 export function LogOut() {
     return getMusicInstance().unauthorize();
 }
 
 export function getHeader() {
-    const header = {
+    return {
         Authorization: `Bearer ${getMusicInstance().developerToken}`,
         Accept: "application/json",
         "Content-Type": "application/json",
         "Music-User-Token": getMusicInstance().musicUserToken
     };
-    return header;
 }
