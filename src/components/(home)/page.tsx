@@ -7,17 +7,19 @@ import { Link } from "react-router";
 import Header from "@/components/(home)/header.tsx";
 import { useSelector } from "react-redux";
 import type { ReduxState } from "@/store";
+import axios from "axios";
 import getApiHeaders from "@/client-functions/get-api-headers.ts";
 
 export default function HomePage() {
     const clerkToken = useSelector<ReduxState>(state => state.auth.clerkToken) as string;
 
     function testClick() {
-        fetch("http://localhost:3000/auth-state", {
-            method: "GET",
+        axios.get("http://localhost:3000/apple-token", {
             headers: getApiHeaders(clerkToken),
         }).then((res) => {
-            res.json().then(data => console.log(data));
+            console.log(res.data);
+        }).catch((err) => {
+            console.error(err);
         });
     }
 
