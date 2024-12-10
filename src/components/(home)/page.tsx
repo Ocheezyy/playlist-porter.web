@@ -5,8 +5,22 @@ import { ReactElement } from "react";
 import { SignedIn, SignedOut, } from "@clerk/clerk-react";
 import { Link } from "react-router";
 import Header from "@/components/(home)/header.tsx";
+import { useSelector } from "react-redux";
+import type { ReduxState } from "@/store";
+import getApiHeaders from "@/client-functions/get-api-headers.ts";
 
 export default function HomePage() {
+    const clerkToken = useSelector<ReduxState>(state => state.auth.clerkToken) as string;
+
+    function testClick() {
+        fetch("http://localhost:3000/auth-state", {
+            method: "GET",
+            headers: getApiHeaders(clerkToken),
+        }).then((res) => {
+            res.json().then(data => console.log(data));
+        });
+    }
+
     return (
         <div>
             <Header />
@@ -83,6 +97,11 @@ export default function HomePage() {
                                 </Button>
                             </Link>
                         </SignedOut>
+                        <Button size="lg"
+                                onClick={testClick}
+                                className="bg-pink-600 text-white hover:bg-pink-700 transition-colors duration-300 shadow-lg shadow-pink-500/50">
+                            Test api <ArrowRight className="ml-2 h-5 w-5"/>
+                        </Button>
                     </div>
                 </section>
             </main>

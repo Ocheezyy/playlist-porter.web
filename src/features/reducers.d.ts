@@ -15,6 +15,10 @@ interface SpotifySliceState {
     transferReady: boolean;
 }
 
+interface AuthSliceState {
+    clerkToken: string;
+}
+
 interface SpotifyUpdatePlaylistAction {
     playlists: string[];
     likedSongData: string[];
