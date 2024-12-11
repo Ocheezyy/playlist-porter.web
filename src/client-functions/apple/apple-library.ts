@@ -1,7 +1,6 @@
 import { apple_auth } from "./apple-provider";
 import store from "@/store";
 import { songNotFound, transferFinished } from "@/features/apple/apple-reducer";
-import {transfer} from "@/features/spotify/spotify-reducer.ts";
 
 export function addToAppleLibrary() {
 
@@ -31,7 +30,7 @@ export function addToAppleLibrary() {
     });
 }
 
-export function findSong(artist, song, resolve, reject) {
+export function findSong(artist: string, song: string, resolve, reject) {
 
     let extractedSong = extractSongNameVerbose(song);
     let searchparam = artist + " " + extractedSong.replace(/ /g, "+");
@@ -53,7 +52,7 @@ export function findSong(artist, song, resolve, reject) {
 }
 
 
-export function apiSearchHelper(url, url2, resolve, reject, artist, song, delay) {
+export function apiSearchHelper(url: string, url2: string, resolve, reject, artist: string, song: string, delay: number) {
     const data = {};
     fetch(url, {
         headers: apple_auth.getHeader()
@@ -172,7 +171,7 @@ export function apiSearchHelper(url, url2, resolve, reject, artist, song, delay)
     });
 }
 
-export function createPlaylistsInAppleLib(thePlayList, currentIndexBeingProccessed, totalToProcess) {
+export function createPlaylistsInAppleLib(thePlayList, currentIndexBeingProcessed: number, totalToProcess: number) {
     const validIDs = [];
     const invalidSongs = [];
     thePlayList.tracks.forEach((t) => {
@@ -217,7 +216,7 @@ export function createPlaylistsInAppleLib(thePlayList, currentIndexBeingProccess
                 store.dispatch(transferFinished([{ name: thePlayList.name, tracks: invalidSongs }]));
             }
 
-            if (currentIndexBeingProccessed === totalToProcess - 1) {
+            if (currentIndexBeingProcessed === totalToProcess - 1) {
                 store.dispatch(transferFinished(true));
 
             }
@@ -227,7 +226,7 @@ export function createPlaylistsInAppleLib(thePlayList, currentIndexBeingProccess
     });
 }
 
-export function extractSongNameVerbose(str) {
+export function extractSongNameVerbose(str: string) {
     // remove (outro)
     // feat
     if (str.includes("(feat. ")) {
@@ -263,7 +262,7 @@ export function artistExists(artist: string, songArtist: string[]) {
     return arr.indexOf(artist.toLowerCase()) > -1;
 }
 
-export function splitArtists(artists) {
+export function splitArtists(artists: string) {
     const seperatedArtists = [];
     const firstSplit = artists.split(", ");
     for (let i = 0; i < firstSplit.length; i++) {
@@ -272,7 +271,7 @@ export function splitArtists(artists) {
             seperatedArtists.push(secondSplit[0]);
         }
         else {
-            // seperate by &
+            // separate by &
             secondSplit.forEach(
                 (e) => {
                     seperatedArtists.push(e);

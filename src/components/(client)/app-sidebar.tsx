@@ -18,7 +18,7 @@ import {
 const items = [
     {
         title: "Home",
-        url: "#",
+        url: "/client",
         icon: Home,
     },
     {
@@ -52,7 +52,7 @@ export function AppSidebar() {
                         <div className="flex items-center space-x-2">
                             <Music className="h-6 w-6 text-pink-500"/>
                             <span
-                                className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500">CheeTransfer</span>
+                                className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500">PLaylist Porter</span>
                         </div>
                     </SidebarMenuItem>
                 </SidebarMenu>

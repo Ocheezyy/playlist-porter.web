@@ -10,7 +10,7 @@ export default function Header(): ReactElement {
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                     <Music className="h-6 w-6 text-pink-500"/>
-                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500">CheeTransfer</span>
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500">Playlist Porter</span>
                 </div>
                 <nav>
                     <ul className="flex space-x-6">
@@ -23,7 +23,8 @@ export default function Header(): ReactElement {
                             </SignedOut>
                             <SignedIn>
                                 <UserButton />
-                            </SignedIn></li>
+                            </SignedIn>
+                        </li>
                     </ul>
                 </nav>
             </div>

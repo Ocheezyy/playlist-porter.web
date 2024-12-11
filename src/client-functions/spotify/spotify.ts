@@ -1,8 +1,14 @@
+import axios, { AxiosResponse } from "axios";
+
 const baseSpotifyAPI = "https://api.spotify.com/v1";
 
-export function getSpotifyPlaylists(tokenjson) {
 
-    const accessToken = tokenjson.access_token;
+type ResolveFunction = (value: unknown) => void;
+type RejectFunction = (error: unknown) => void;
+
+export function getSpotifyPlaylists(tokenJSON: SpotifyTokenJSON) {
+
+    const accessToken = tokenJSON.access_token;
     const getPlaylistURL = baseSpotifyAPI + "/me/playlists?limit=50";
     // var getLikedSongsURL = baseSpotifyAPI + '/me/tracks';
 
@@ -17,30 +23,30 @@ export function getSpotifyPlaylists(tokenjson) {
 }
 
 
-export function getAllDataRecursively(url, data, resolve, reject, accessToken) {
-    fetch(url, {
+export function getAllDataRecursively(url: string, data: SpotifyPlaylist[], resolve: ResolveFunction, reject: RejectFunction, accessToken: string) {
+    axios.get(url, {
         headers: {
             "Authorization": "Bearer " + accessToken
         }
     })
-        .then((response) => response.json())
         .then((response) => {
-            const retrievedData = data.concat(response.items);
-            if (response.next !== null) {
-                getAllDataRecursively(response.next, retrievedData, resolve, reject, accessToken);
+            const retrievedData = data.concat(response.data.items);
+            if (response.data.next !== null) {
+                getAllDataRecursively(response.data.next, retrievedData, resolve, reject, accessToken);
             }
             else {
                 resolve(retrievedData);
             }
         }).catch(error => {
-        console.log(error);
-        handleErrors(error);
-        reject("Something went wrong. Please refresh the page and try again.");
-    });
+            console.log(error);
+            handleErrors(error);
+            reject("Something went wrong. Please refresh the page and try again.");
+        }
+    );
 }
 
-function handleErrors(response) {
-    if (!response.ok) {
+function handleErrors(response: AxiosResponse) {
+    if (!response || response.status !== 200 || response.statusText !== "OK") {
         if (response.status === 401) {
             console.log(response);
 
@@ -51,7 +57,7 @@ function handleErrors(response) {
 
 }
 
-export function extractSongName(str) {
+export function extractSongName(str: string) {
     if (str.includes("(feat. ")) {
         return str.substring(0, str.indexOf("(feat. "));
     }
@@ -66,21 +72,17 @@ export function extractSongName(str) {
 
 
 
-export function fetchAllTracksFromGivenPlaylists(listOfPlayListIDs: string[], token) {
+export function fetchAllTracksFromGivenPlaylists(listOfPlayListIDs: string[], token: SpotifyTokenJSON) {
     const accessToken = token.access_token;
 
     const listOfPlayListIDsArray = Array.from(listOfPlayListIDs);
     const getPlaylistURLs = listOfPlayListIDsArray.filter(function(id){
-        if(id === "allthelikedsongsid"){
-            return false;
-        }
-        return true;
+        return id !== "allthelikedsongsid";
     }).map((id) => {
         return baseSpotifyAPI + "/playlists/" + id + "/tracks?limit=50";
     });
 
     const playlistPromises = getPlaylistURLs.map((url) =>
-
         new Promise((resolve, reject) => {
             fetchSongsInfosInASinglePlaylistRecursively(url, [], accessToken, resolve, reject);
         }));
@@ -89,38 +91,41 @@ export function fetchAllTracksFromGivenPlaylists(listOfPlayListIDs: string[], to
 }
 
 
-export function fetchSongsInfosInASinglePlaylistRecursively(url, compileddata, accessToken, resolve, reject) {
-    console.log(url);
+export function fetchSongsInfosInASinglePlaylistRecursively(url: string, compiledData: SpotifySongInfo[], accessToken: string, resolve: ResolveFunction, reject: RejectFunction) {
+    // console.log(url);
     fetch(url, {
         headers: {
             "Authorization": "Bearer " + accessToken
         }
     })
         .then((response) => response.json())
-        .then((response) => {
-            const newData = [];
+        .then((response: SpotifyPlaylistTracks) => {
+            const newData: SpotifySongInfo[] = [];
             response.items.forEach((data) => {
-                const cur = {};
                 if (data.track !== null) {
-                    cur["trackName"] = extractSongName(data.track.name);
-                    cur["artistName"] = [];
+                    const artists: string[] = [];
                     data.track.artists.forEach((artist) => {
-                        cur["artistName"].push(artist.name);
+                        artists.push(artist.name);
                     });
-                    // add album parameters
-                    cur["albumName"] = data.track.album.name;
-                    cur["albumArtist"] = [];
+                    const albumArtists: string[] = [];
                     data.track.album.artists.forEach((artist) => {
-                        cur["albumArtist"].push(artist.name);
+                        albumArtists.push(artist.name);
                     });
+                    const cur: SpotifySongInfo = {
+                        trackName: extractSongName(data.track.name),
+                        artistName: artists,
+                        albumName: data.track.album.name,
+                        albumArtist: albumArtists,
+                    };
                     newData.push(cur);
                 }
             });
-            const retrievedData = compileddata.concat(newData);
+            const retrievedData = compiledData.concat(newData);
             if (response.next !== null) {
                 fetchSongsInfosInASinglePlaylistRecursively(response.next, retrievedData, accessToken, resolve, reject);
             } else {
                 const finalRES = {};
+                // @ts-expect-error Don't feel like typing
                 finalRES[url.split("/")[5]] = retrievedData;
                 resolve(finalRES);
             }

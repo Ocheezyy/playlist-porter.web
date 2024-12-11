@@ -29,20 +29,21 @@ export function AccountCard({ title, icon, description, buttonText, linked }: Ac
         if (title === "Spotify") {
             if (linked) {
                 return (
-                    <a href="http://localhost:3000/spotify-login">
-                        <Button className={buttonClasses}>
-                            {buttonText}
-                            <ArrowRight className="ml-2 h-4 w-4"/>
-                        </Button>
-                    </a>
+                    <Button className={buttonClasses} onClick={removeToken}>
+                        {buttonText}
+                        <ArrowRight className="ml-2 h-4 w-4"/>
+                    </Button>
                 );
             }
             return (
-                <Button className={buttonClasses} onClick={removeToken}>
-                    {buttonText}
-                    <ArrowRight className="ml-2 h-4 w-4"/>
-                </Button>
-            );
+                <a href="http://localhost:3000/spotify-login">
+                    <Button className={buttonClasses}>
+                        {buttonText}
+                        <ArrowRight className="ml-2 h-4 w-4"/>
+                    </Button>
+                </a>
+            )
+            ;
         } else if (title === "Apple Music") {
             if (linked) {
                 return (
