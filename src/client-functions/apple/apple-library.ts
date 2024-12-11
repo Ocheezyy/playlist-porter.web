@@ -1,11 +1,12 @@
 import { apple_auth } from "./apple-provider";
 import store from "@/store";
-import { songNotFound, transferFinished, updateCurrentPlaylist } from "@/features/apple/apple-reducer";
+import { transferFinished, updateCurrentPlaylist } from "@/features/apple/apple-reducer";
 import axios from "axios";
 
 export function addToAppleLibrary() {
     const state = store.getState();
     const playlistToTransfer = state.spotify.transfer;
+    // @ts-expect-error come back to
     let songsInPlaylists = [];
 
     playlistToTransfer.forEach((playlist) => {
@@ -13,11 +14,13 @@ export function addToAppleLibrary() {
         store.dispatch(updateCurrentPlaylist(playlist.name));
 
         songsInPlaylists = [];
+        // @ts-expect-error come back to
         playlist.tracks.forEach((item) => {
             songsInPlaylists.push({ a_name: item.artistName[0], t_name: item.trackName });
         });
 
         return Promise.all([
+            // @ts-expect-error come back to
             songsInPlaylists.map((song) =>
                 new Promise((resolve, reject) => {
                     findSong(song.a_name, song.t_name, resolve, reject);
@@ -34,13 +37,13 @@ export function addToAppleLibrary() {
 export function findSong(artist: string, song: string, resolve: ResolveFunction, reject: RejectFunction) {
 
     let extractedSong = extractSongNameVerbose(song);
-    let searchparam = artist + " " + extractedSong.replace(/ /g, "+");
+    let searchParam = artist + " " + extractedSong.replace(/ /g, "+");
 
     extractedSong = encodeURIComponent(extractedSong);
-    searchparam = encodeURIComponent(searchparam);
+    searchParam = encodeURIComponent(searchParam);
 
     const url1 = "https://api.music.apple.com/v1/catalog/us/search?term=" + extractedSong + "&limit=25&types=songs";
-    const url2 = "https://api.music.apple.com/v1/catalog/us/search?term=" + searchparam + "&limit=25&types=songs";
+    const url2 = "https://api.music.apple.com/v1/catalog/us/search?term=" + searchParam + "&limit=25&types=songs";
 
     new Promise((resolve, reject) => {
         apiSearchHelper(url1, url2, resolve, reject, artist, song, 1);
@@ -85,7 +88,9 @@ export function apiSearchHelper(url: string, url2: string | null, resolve: Resol
         if (response.results.songs !== undefined) {
             for (let i = 0; i < response.results.songs.data.length; i++) {
                 if (artistExists(artist, splitArtists(response.results.songs.data[i].attributes.artistName))) {
+                    // @ts-expect-error come back to
                     data.id = response.results.songs.data[i].id;
+                    // @ts-expect-error come back to
                     data.type = "songs";
                     resolve(data);
                     added = true;
@@ -99,52 +104,53 @@ export function apiSearchHelper(url: string, url2: string | null, resolve: Resol
         }
 
         if (url2 !== null) {
-            fetch(url2, {
+            axios.get(url2, {
                 headers: apple_auth.getHeader()
-            }).then((response) => {
-                const res = response.json();
-                const status = response.status;
-                res.then((response) => {
-                    if (status !== 200) {
-                        if (delay > 10000) {
-                            return;
-                        }
+            }).then((res) => {
+                const status = res.status;
+                const response = res.data;
 
-                        console.log("Tried URL Two, URL One did not work");
-                        if (status === 429) {
-                            console.log(response.message);
-                            console.log("we got in the after 429");
-                            console.log("retrying after milliseconds: " + delay);
-                            delay = delay * 2;
-                            setTimeout(() => {
-                                apiSearchHelper(url, url2, resolve, reject, artist, song, delay);
-                            }, delay * 1000);
-                        }
-
-                        if (status === 400) {
-                            console.log("We got a 400 because of " + song + " by " + artist);
-                            resolve({ id: `We could not find ${song} by ${artist}` });
-                        }
-
+                if (status !== 200) {
+                    if (delay > 10000) {
                         return;
                     }
-                    let added = false;
-                    if (response.results.songs !== undefined) {
-                        for (let i = 0; i < response.results.songs.data.length; i++) {
-                            if (artistExists(artist, splitArtists(response.results.songs.data[i].attributes.artistName))) {
-                                data.id = response.results.songs.data[i].id;
-                                data.type = "songs";
-                                added = true;
-                                resolve(data);
-                                break;
-                            }
-                        }
+
+                    console.log("Tried URL Two, URL One did not work");
+                    if (status === 429) {
+                        console.log(response.message);
+                        console.log("we got in the after 429");
+                        console.log("retrying after milliseconds: " + delay);
+                        delay = delay * 2;
+                        setTimeout(() => {
+                            apiSearchHelper(url, url2, resolve, reject, artist, song, delay);
+                        }, delay * 1000);
                     }
 
-                    if (!added) {
+                    if (status === 400) {
+                        console.log("We got a 400 because of " + song + " by " + artist);
                         resolve({ id: `We could not find ${song} by ${artist}` });
                     }
-                });
+
+                    return;
+                }
+                let added = false;
+                if (response.results.songs !== undefined) {
+                    for (let i = 0; i < response.results.songs.data.length; i++) {
+                        if (artistExists(artist, splitArtists(response.results.songs.data[i].attributes.artistName))) {
+                            // @ts-expect-error come back to
+                            data.id = response.results.songs.data[i].id;
+                            // @ts-expect-error come back to
+                            data.type = "songs";
+                            added = true;
+                            resolve(data);
+                            break;
+                        }
+                    }
+                }
+
+                if (!added) {
+                    resolve({ id: `We could not find ${song} by ${artist}` });
+                }
             }).catch((error) => {
                 console.log("Error", error);
                 if (delay > 10000) {
@@ -170,9 +176,13 @@ export function apiSearchHelper(url: string, url2: string | null, resolve: Resol
     });
 }
 
+// @ts-expect-error come back to
 export function createPlaylistsInAppleLib(thePlayList, currentIndexBeingProcessed: number, totalToProcess: number) {
+    // @ts-expect-error come back to
     const validIDs = [];
+    // @ts-expect-error come back to
     const invalidSongs = [];
+    // @ts-expect-error come back to
     thePlayList.tracks.forEach((t) => {
         if (t.id.includes("We could not find")) {
             invalidSongs.push(t.id.toString().substring(18));
@@ -188,6 +198,7 @@ export function createPlaylistsInAppleLib(thePlayList, currentIndexBeingProcesse
         },
         "relationships": {
             "tracks": {
+                // @ts-expect-error come back to
                 "data": validIDs
             }
         }
@@ -212,6 +223,7 @@ export function createPlaylistsInAppleLib(thePlayList, currentIndexBeingProcesse
 
             //Update our not added list
             if (invalidSongs.length !== 0) {
+                // @ts-expect-error come back to
                 store.dispatch(transferFinished([{ name: thePlayList.name, tracks: invalidSongs }]));
             }
 
