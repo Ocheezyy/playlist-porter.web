@@ -1,70 +1,37 @@
-"use client";
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Disc3, Search } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import SpotifyPlaylistCard from "@/components/playlist-cards/spotify-playlist-card";
 import ApplePlaylistCard from "@/components/playlist-cards/apple-playlist-card";
+import { useSelector } from "react-redux";
+import { ReduxState } from "@/store.ts";
+import { isLoggedIn, LogIn } from "@/client-functions/apple/apple-auth.ts";
 
 
+export default function Playlists() {
+    const spotifyPlaylists: SpotifyPlaylistData[] = useSelector<ReduxState>(state => state.spotify.playlists) as SpotifyPlaylistData[];
+    const applePlaylists: ApplePlaylist[] = useSelector<ReduxState>(state => state.apple.playlists) as ApplePlaylist[];
 
-export default function Playlists({ initialPlaylists }: PlaylistsProps) {
-    const [playlistData, setPlaylistData] = useState<any>(initialPlaylists);
-    // const [appleAvailable, setAppleAvailable] = useState<boolean>(false);
-    // const [musicKit, setMusicKit] = useState<MusicKit.MusicKitInstance>();
-
-    // useEffect(() => {
-    //     console.log("useeffect ran");
-    //     document.addEventListener("musickitloaded", async function() {
-    //         console.log("musickitloaded");
-    //         await MusicKitConfigure(window.MusicKit);
-    //         if (!appleIsLoggedIn()) {
-    //             await appleLogIn();
-    //         }
-    //         const applePlaylists = await getApplePlaylists();
-    //         console.log(applePlaylists);
-    //         setPlaylistData({ apple: applePlaylists, ...playlistData });
-    //     //     const music = await window.MusicKit.getInstance();
-    //     //     console.log(music);
-    //     //     setAppleAvailable(true);
-    //     //     setMusicKit(music);
-    //     //     if (!music.isAuthorized) {
-    //     //         await music.authorize();
-    //     //     }
-    //     //
-    //     //     console.log(music?.api.music("v1/me/library/playlists"));
-    //     });
-    // }, []);
-    //
-    //
-    // useEffect(() => {
-    //     console.log("playlistData", playlistData);
-    // }, [playlistData]);
-
-
-
-
-
-
-    // Bring back for refreshing of playlists
-    // const [playlists, setPlaylists] = useState<Playlists>(initialPlaylists || { spotify: [], apple: [] });
     const [selectedPlatform, setSelectedPlatform] = useState<Platform>("spotify");
     const [searchQuery, setSearchQuery] = useState("");
-    const [platformPlaylists, setPlatformPlaylists] = useState<ApplePlaylist[] | SpotifyPlaylist[]>(initialPlaylists?.spotify || []);
+    const [platformPlaylists, setPlatformPlaylists] = useState<ApplePlaylist[] | SpotifyPlaylistData[]>(spotifyPlaylists || []);
 
+    useEffect(() => {
+        if (selectedPlatform === "apple" && !isLoggedIn()) {
+            LogIn();
+        }
+    }, [selectedPlatform]);
+    
     useCallback(() => {
-        const outputPlaylists = platformPlaylists?.filter(playlist => {
-            if (selectedPlatform === "spotify") {
-                const currentPlaylist = playlist as SpotifyPlaylist;
-                currentPlaylist?.name.toLowerCase().includes(searchQuery.toLowerCase());
-            } //else if (selectedPlatform === "apple") {
-            //     const currentPlaylist = playlist as ApplePlaylist;
-            //     currentPlaylist?.name.toLowerCase().includes(searchQuery.toLowerCase());
-            // }
-        });
-        setPlatformPlaylists(outputPlaylists || []);
-    }, [platformPlaylists, searchQuery, selectedPlatform]);
+        if (selectedPlatform === "spotify") {
+            setPlatformPlaylists(spotifyPlaylists?.filter(playlist => 
+                playlist.name.toLowerCase().includes(searchQuery.toLowerCase())));
+        } else if (selectedPlatform === "apple") {
+            setPlatformPlaylists(applePlaylists?.filter(playlist =>
+                playlist.attributes.name.toLowerCase().includes(searchQuery.toLowerCase())));
+        }
+    }, [applePlaylists, searchQuery, selectedPlatform, spotifyPlaylists]);
 
     const hasPlaylists = platformPlaylists && platformPlaylists.length > 0;
 
@@ -114,7 +81,7 @@ export default function Playlists({ initialPlaylists }: PlaylistsProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                     {hasPlaylists && platformPlaylists?.map((playlist, idx) => (
                         selectedPlatform === "spotify" ?
-                            <SpotifyPlaylistCard key={`${idx}-spot-playlist`} playlist={playlist as SpotifyPlaylist}/> :
+                            <SpotifyPlaylistCard key={`${idx}-spot-playlist`} playlist={playlist as SpotifyPlaylistData}/> :
                             selectedPlatform === "apple" ? <ApplePlaylistCard key={`${idx}-apple-playlist`}
                                                                               playlist={playlist as ApplePlaylist}/> :
                                 null

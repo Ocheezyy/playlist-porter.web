@@ -11,7 +11,7 @@ export default function ApplePlaylistCard({ playlist }: ApplePlaylistCardProps) 
                     playlist.id ? (
                         <img
                             src={"playlist.images[0].url"}
-                            alt={"playlist.name"}
+                            alt={playlist.attributes.name}
                             // layout="fill"
                             // objectFit="cover"
                         />
@@ -23,7 +23,7 @@ export default function ApplePlaylistCard({ playlist }: ApplePlaylistCardProps) 
             </div>
             <div className="p-4 flex items-center justify-between">
                 <div className="flex-grow overflow-hidden">
-                    <h2 className="font-semibold text-lg truncate">{"playlist.name"}</h2>
+                    <h2 className="font-semibold text-lg truncate">{playlist.attributes.name}</h2>
                     <p className="text-sm text-gray-400 truncate">{"playlist.tracks.total"} tracks</p>
                 </div>
                 <SpotifyIcon className="w-6 h-6 text-[#1DB954] flex-shrink-0 ml-2"/>

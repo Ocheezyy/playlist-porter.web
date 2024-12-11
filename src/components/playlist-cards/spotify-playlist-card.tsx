@@ -9,9 +9,9 @@ export default function SpotifyPlaylistCard({ playlist }: SpotifyPlaylistCardPro
         <Card key={playlist.id}
               className="overflow-hidden bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">
             <div className="relative aspect-square">
-                {playlist.images && playlist.images[0] ? (
+                {playlist.image ? (
                     <img
-                        src={playlist.images[0].url}
+                        src={playlist.image}
                         alt={playlist.name}
                         // layout="fill"
                         // objectFit="cover"
@@ -25,7 +25,7 @@ export default function SpotifyPlaylistCard({ playlist }: SpotifyPlaylistCardPro
             <div className="p-4 flex items-center justify-between">
                 <div className="flex-grow overflow-hidden">
                     <h2 className="font-semibold text-lg truncate">{playlist.name}</h2>
-                    <p className="text-sm text-gray-400 truncate">{playlist.tracks.total} tracks</p>
+                    <p className="text-sm text-gray-400 truncate">{playlist.no_of_songs} tracks</p>
                 </div>
                 <SpotifyIcon className="w-6 h-6 text-[#1DB954] flex-shrink-0 ml-2"/>
             </div>

@@ -1,4 +1,5 @@
 interface AppleSliceState {
+    playlists: ApplePlaylist[];
     songsNotFound: string[];
     transferDone: boolean;
     currentPlaylist: string;
@@ -14,7 +15,7 @@ interface SpotifyTempMap {
 
 interface SpotifySliceState {
     accessToken: string;
-    playlists: string[];
+    playlists: SpotifyPlaylist[];
     transfer: any[];
     loaded: boolean;
     likedSongData: SpotifyTrack[];
@@ -27,8 +28,8 @@ interface AuthSliceState {
 }
 
 interface SpotifyUpdatePlaylistAction {
-    playlists: string[];
-    likedSongData: string[];
+    playlists: SpotifyPlaylistData[];
+    likedSongData: SpotifyTrack[];
     tempMap: SpotifyTempMap;
 }
 
@@ -37,7 +38,7 @@ interface SpotifyTransferAction {
     type: string;
 }
 
-interface PlaylistData {
+interface SpotifyPlaylistData {
     name: string;
     no_of_songs: number;
     playlist_owner: string;

@@ -3,7 +3,7 @@ import getApiHeaders from "@/client-functions/get-api-headers.ts";
 
 const instance = window.MusicKit;
 
-export function configure(clerkToken: string) {
+export function configureMusicKit(clerkToken: string) {
     const apiUrl = `${import.meta.env.VITE_API_URL}/apple-token`;
     axios.get(apiUrl, {
         headers: getApiHeaders(clerkToken)
@@ -25,7 +25,7 @@ export function configure(clerkToken: string) {
 }
 
 export function getMusicInstance() {
-    return instance.getInstance();
+    return instance?.getInstance();
 }
 
 export function isLoggedIn() {

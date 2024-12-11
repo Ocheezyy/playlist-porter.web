@@ -1,7 +1,8 @@
 import { apple_auth } from "./apple-provider";
 import store from "@/store";
-import { transferFinished, updateCurrentPlaylist } from "@/features/apple/apple-reducer";
-import axios from "axios";
+import { transferFinished, updateCurrentPlaylist, setPlaylists } from "@/features/apple/apple-reducer";
+import axios, { AxiosResponse } from "axios";
+import { getHeader, isLoggedIn } from "@/client-functions/apple/apple-auth.ts";
 
 export function addToAppleLibrary() {
     const state = store.getState();
@@ -291,4 +292,31 @@ export function splitArtists(artists: string) {
         }
     }
     return seperatedArtists;
+}
+
+
+export async function getAppleMusicPlaylists(): Promise<void> {
+    const allPlaylists: ApplePlaylist[] = [];
+    let nextPageUrl: string | undefined = "https://api.music.apple.com/v1/me/library/playlists";
+
+    try {
+        while (nextPageUrl) {
+            const response: AxiosResponse<ApplePlaylistsResponse> = await axios.get(
+                nextPageUrl,
+                {
+                    headers: getHeader()
+                }
+            );
+
+            allPlaylists.push(...response.data.data);
+            nextPageUrl = response.data.next ?
+                `https://api.music.apple.com${response.data.next}` :
+                undefined;
+        }
+
+        store.dispatch(setPlaylists(allPlaylists));
+    } catch (error) {
+        console.error("Error fetching Apple Music playlists:", error);
+        throw error;
+    }
 }

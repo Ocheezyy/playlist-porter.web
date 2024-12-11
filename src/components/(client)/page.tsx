@@ -13,7 +13,7 @@ export default function AppHome() {
     if (!spotifyLoggedIn && !appleLoggedIn) {
         return <ClientAccountCards />;
     }
-    return <Playlists initialPlaylists={{ apple: [], spotify: [] }} />;
+    return <Playlists />;
 
     // if ((!spotifyAccount || spotifyAccount.externalId === "") && (!appleAccount || appleAccount.externalId === "")) {
     //     return <NoConnections />;

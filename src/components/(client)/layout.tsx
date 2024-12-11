@@ -8,19 +8,25 @@ import { setToken as setSpotifyToken } from "@/features/spotify/spotify-reducer.
 import { useEffect } from "react";
 import queryString from "query-string";
 import { fetchSpotifyPlaylists } from "@/features/spotify/spotify-actions.ts";
+import { configureMusicKit, isLoggedIn } from "@/client-functions/apple/apple-auth.ts";
+import { getAppleMusicPlaylists } from "@/client-functions/apple/apple-library.ts";
 
 
 export default function ClientLayout() {
     const { getToken: getClerkToken } = useAuth();
     const dispatch = useDispatch();
 
-    async function setClerkTokenC() {
-        const token = await getClerkToken();
-        dispatch(setClerkToken(token));
-    }
-
     useEffect(() => {
-        setClerkTokenC();
+        getClerkToken()
+            .then(token => {
+                dispatch(setClerkToken(token));
+                configureMusicKit(token!);
+            });
+
+        if (isLoggedIn()) {
+            getAppleMusicPlaylists();
+        }
+
 
         const parsed = queryString.parse(window.location.search);
         if (parsed?.access_token) {

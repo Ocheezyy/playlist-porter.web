@@ -134,16 +134,28 @@ type SpotifyPlaylist = {
     uri: string;
 };
 
-type ApplePlaylist = {
+interface ApplePlaylist {
     id: string;
-};
+    type: string;
+    href: string;
+    attributes: {
+        name: string;
+        description?: string;
+        canEdit: boolean;
+        dateAdded: string;
+        playParams?: {
+            catalogId?: string;
+        };
+    };
+}
 
-interface PlaylistsProps {
-    initialPlaylists: Playlists | null;
+interface ApplePlaylistsResponse {
+    data: Playlist[];
+    next?: string;
 }
 
 interface SpotifyPlaylistCardProps {
-    playlist: SpotifyPlaylist;
+    playlist: SpotifyPlaylistData;
 }
 
 interface ApplePlaylistCardProps {
