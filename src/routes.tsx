@@ -12,6 +12,7 @@ import HowItWorksPage from "@/components/(home)/how-it-works/page.tsx";
 
 import SignIn from "@/components/(auth)/sign-in";
 import SignUp from "@/components/(auth)/sign-up";
+import TransferProgress from "@/components/(client)/transfer/page.tsx";
 
 
 export default function AppRoutes() {
@@ -25,6 +26,7 @@ export default function AppRoutes() {
                 <Route index element={<ClientHome />} />
                 <Route path="accounts" element={<AccountsPage />} />
                 <Route path="supported-platforms" element={<SupportedPlatforms />} />
+                <Route path="transfer" element={<TransferProgress />} />
             </Route>
             <Route path="auth/sign-in" element={<SignIn />} />
             <Route path="auth/sign-up" element={<SignUp />} />
