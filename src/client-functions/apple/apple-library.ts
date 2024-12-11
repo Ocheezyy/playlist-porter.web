@@ -1,15 +1,16 @@
 import { apple_auth } from "./apple-provider";
 import store from "@/store";
-import { songNotFound, transferFinished } from "@/features/apple/apple-reducer";
+import { songNotFound, transferFinished, updateCurrentPlaylist } from "@/features/apple/apple-reducer";
+import axios from "axios";
 
 export function addToAppleLibrary() {
-
     const state = store.getState();
     const playlistToTransfer = state.spotify.transfer;
     let songsInPlaylists = [];
 
     playlistToTransfer.forEach((playlist) => {
-        // store.dispatch(updateCurrentSearchingPlaylist(playlist.name))
+        // TODO: This could be the cause of an error
+        store.dispatch(updateCurrentPlaylist(playlist.name));
 
         songsInPlaylists = [];
         playlist.tracks.forEach((item) => {
@@ -30,7 +31,7 @@ export function addToAppleLibrary() {
     });
 }
 
-export function findSong(artist: string, song: string, resolve, reject) {
+export function findSong(artist: string, song: string, resolve: ResolveFunction, reject: RejectFunction) {
 
     let extractedSong = extractSongNameVerbose(song);
     let searchparam = artist + " " + extractedSong.replace(/ /g, "+");
@@ -52,53 +53,52 @@ export function findSong(artist: string, song: string, resolve, reject) {
 }
 
 
-export function apiSearchHelper(url: string, url2: string, resolve, reject, artist: string, song: string, delay: number) {
+export function apiSearchHelper(url: string, url2: string | null, resolve: ResolveFunction, reject: RejectFunction, artist: string, song: string, delay: number) {
     const data = {};
-    fetch(url, {
+    axios.get(url, {
         headers: apple_auth.getHeader()
-    }).then((response) => {
-        const res = response.json();
+    }).then((res) => {
+        const response = res.data;
         const status = response.status;
-        res.then((response) => {
-            if (status !== 200) {
-                if (delay > 10000) {
-                    return;
-                }
-                if (status === 429) {
-                    console.log(response.message);
-                    console.log("we got in the after 429");
-                    delay = delay * 2;
-                    console.log("retrying after seconds: " + delay);
-                    setTimeout(() => {
-                        console.log("Calling recursive function");
-                        apiSearchHelper(url, url2, resolve, reject, artist, song, delay);
-                    }, delay * 1000);
-                }
-
-                if (status === 400) {
-                    console.log("We got a 400 because of " + song + " by " + artist);
-                    resolve({ id: `We could not find ${song} by ${artist}` });
-                }
-
+        if (status !== 200) {
+            if (delay > 10000) {
                 return;
             }
-            let added = false;
-            if (response.results.songs !== undefined) {
-                for (let i = 0; i < response.results.songs.data.length; i++) {
-                    if (artistExists(artist, splitArtists(response.results.songs.data[i].attributes.artistName))) {
-                        data.id = response.results.songs.data[i].id;
-                        data.type = "songs";
-                        resolve(data);
-                        added = true;
-                        break;
-                    }
+            if (status === 429) {
+                console.log(response.message);
+                delay = delay * 2;
+                console.log("retrying after seconds: " + delay);
+                setTimeout(() => {
+                    console.log("Calling recursive function");
+                    apiSearchHelper(url, url2, resolve, reject, artist, song, delay);
+                }, delay * 1000);
+            }
+
+            if (status === 400) {
+                console.log("We got a 400 because of " + song + " by " + artist);
+                resolve({ id: `We could not find ${song} by ${artist}` });
+            }
+
+            return;
+        }
+        let added = false;
+        if (response.results.songs !== undefined) {
+            for (let i = 0; i < response.results.songs.data.length; i++) {
+                if (artistExists(artist, splitArtists(response.results.songs.data[i].attributes.artistName))) {
+                    data.id = response.results.songs.data[i].id;
+                    data.type = "songs";
+                    resolve(data);
+                    added = true;
+                    break;
                 }
             }
+        }
 
-            if (added) {
-                return;
-            }
+        if (added) {
+            return;
+        }
 
+        if (url2 !== null) {
             fetch(url2, {
                 headers: apple_auth.getHeader()
             }).then((response) => {
@@ -156,8 +156,7 @@ export function apiSearchHelper(url: string, url2: string, resolve, reject, arti
                     apiSearchHelper(url, url2, resolve, reject, artist, song, delay);
                 }, delay * 1000);
             });
-
-        });
+        }
     }).catch((error) => {
         console.log("Error", error);
         if (delay > 10000) {
@@ -166,7 +165,7 @@ export function apiSearchHelper(url: string, url2: string, resolve, reject, arti
 
         delay = delay * 2;
         setTimeout(() => {
-            apiSearchHelper(url, resolve, reject, artist, song, delay);
+            apiSearchHelper(url, null, resolve, reject, artist, song, delay);
         }, delay * 1000);
     });
 }

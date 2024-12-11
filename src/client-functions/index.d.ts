@@ -7,6 +7,9 @@ interface Playlists {
     apple: ApplePlaylist[];
 }
 
+type ResolveFunction = (value: unknown) => void;
+type RejectFunction = (error: unknown) => void;
+
 type Platform = "spotify" | "apple" | string;
 
 interface SpotifyRestriction {

@@ -17,7 +17,7 @@ interface SpotifySliceState {
     playlists: string[];
     transfer: any[];
     loaded: boolean;
-    likedSongData: string[];
+    likedSongData: SpotifyTrack[];
     tempMap: SpotifyTempMap;
     transferReady: boolean;
 }
@@ -29,7 +29,7 @@ interface AuthSliceState {
 interface SpotifyUpdatePlaylistAction {
     playlists: string[];
     likedSongData: string[];
-    tempMap: object;
+    tempMap: SpotifyTempMap;
 }
 
 interface SpotifyTransferAction {

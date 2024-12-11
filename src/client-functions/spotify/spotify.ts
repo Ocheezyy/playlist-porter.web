@@ -2,13 +2,7 @@ import axios, { AxiosResponse } from "axios";
 
 const baseSpotifyAPI = "https://api.spotify.com/v1";
 
-
-type ResolveFunction = (value: unknown) => void;
-type RejectFunction = (error: unknown) => void;
-
-export function getSpotifyPlaylists(tokenJSON: SpotifyTokenJSON) {
-
-    const accessToken = tokenJSON.access_token;
+export function getSpotifyPlaylists(accessToken: string) {
     const getPlaylistURL = baseSpotifyAPI + "/me/playlists?limit=50";
     // var getLikedSongsURL = baseSpotifyAPI + '/me/tracks';
 
@@ -34,9 +28,7 @@ export function getAllDataRecursively(url: string, data: SpotifyPlaylist[], reso
             if (response.data.next !== null) {
                 getAllDataRecursively(response.data.next, retrievedData, resolve, reject, accessToken);
             }
-            else {
-                resolve(retrievedData);
-            }
+            else resolve(retrievedData);
         }).catch(error => {
             console.log(error);
             handleErrors(error);
@@ -49,7 +41,6 @@ function handleErrors(response: AxiosResponse) {
     if (!response || response.status !== 200 || response.statusText !== "OK") {
         if (response.status === 401) {
             console.log(response);
-
             throw Error(response.statusText);
         }
         return response;
@@ -92,16 +83,14 @@ export function fetchAllTracksFromGivenPlaylists(listOfPlayListIDs: string[], to
 
 
 export function fetchSongsInfosInASinglePlaylistRecursively(url: string, compiledData: SpotifySongInfo[], accessToken: string, resolve: ResolveFunction, reject: RejectFunction) {
-    // console.log(url);
-    fetch(url, {
+    axios.get(url, {
         headers: {
             "Authorization": "Bearer " + accessToken
         }
     })
-        .then((response) => response.json())
-        .then((response: SpotifyPlaylistTracks) => {
+        .then((response: AxiosResponse<SpotifyPlaylistTracks>) => {
             const newData: SpotifySongInfo[] = [];
-            response.items.forEach((data) => {
+            response.data.items.forEach((data) => {
                 if (data.track !== null) {
                     const artists: string[] = [];
                     data.track.artists.forEach((artist) => {
@@ -121,8 +110,8 @@ export function fetchSongsInfosInASinglePlaylistRecursively(url: string, compile
                 }
             });
             const retrievedData = compiledData.concat(newData);
-            if (response.next !== null) {
-                fetchSongsInfosInASinglePlaylistRecursively(response.next, retrievedData, accessToken, resolve, reject);
+            if (response.data.next !== null) {
+                fetchSongsInfosInASinglePlaylistRecursively(response.data.next, retrievedData, accessToken, resolve, reject);
             } else {
                 const finalRES = {};
                 // @ts-expect-error Don't feel like typing

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction, SliceCaseReducers, SliceSelectors} from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, SliceCaseReducers, SliceSelectors } from "@reduxjs/toolkit";
 
 const spotifySlice = createSlice<
     SpotifySliceState, SliceCaseReducers<SpotifySliceState>, string, SliceSelectors<SpotifySliceState>, string
@@ -23,7 +23,7 @@ const spotifySlice = createSlice<
             state.tempMap = action.payload.tempMap;
             state.loaded = true;
         },
-        transfer: (state, action: PayloadAction<string[]>) => {
+        transfer: (state, action: PayloadAction<any[]>) => {
             state.transfer = action.payload;
             state.transferReady  = true;
         }
