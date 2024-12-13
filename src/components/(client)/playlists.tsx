@@ -7,9 +7,11 @@ import ApplePlaylistCard from "@/components/playlist-cards/apple-playlist-card";
 import { useSelector } from "react-redux";
 import { ReduxState } from "@/store.ts";
 import { isLoggedIn, LogIn } from "@/client-functions/apple/apple-auth.ts";
+import { fetchSpotifyPlaylists } from "@/features/spotify/spotify-actions.ts";
 
 
 export default function Playlists() {
+    const spotifyToken: string = useSelector<ReduxState>(state => state.spotify.accessToken) as string;
     const spotifyPlaylists: SpotifyPlaylistData[] = useSelector<ReduxState>(state => state.spotify.playlists) as SpotifyPlaylistData[];
     const applePlaylists: ApplePlaylist[] = useSelector<ReduxState>(state => state.apple.playlists) as ApplePlaylist[];
 
@@ -22,16 +24,30 @@ export default function Playlists() {
             LogIn();
         }
     }, [selectedPlatform]);
-    
-    useCallback(() => {
-        if (selectedPlatform === "spotify") {
-            setPlatformPlaylists(spotifyPlaylists?.filter(playlist => 
-                playlist.name.toLowerCase().includes(searchQuery.toLowerCase())));
-        } else if (selectedPlatform === "apple") {
-            setPlatformPlaylists(applePlaylists?.filter(playlist =>
-                playlist.attributes.name.toLowerCase().includes(searchQuery.toLowerCase())));
+
+    useEffect(() => {
+        if (!spotifyPlaylists) {
+            fetchSpotifyPlaylists(spotifyToken).then(() => {
+                setPlatformPlaylists(spotifyPlaylists);
+            });
+        } else {
+            setPlatformPlaylists(spotifyPlaylists);
         }
-    }, [applePlaylists, searchQuery, selectedPlatform, spotifyPlaylists]);
+    }, [spotifyPlaylists, spotifyToken]);
+
+    // TODO: Setup search functionality
+    // useCallback(() => {
+    //     console.log("callback kicked");
+    //     if (selectedPlatform === "spotify") {
+    //         const newPlaylists = spotifyPlaylists?.filter(playlist =>
+    //             playlist.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    //         console.log("newPlaylists", newPlaylists);
+    //         setPlatformPlaylists(newPlaylists);
+    //     } else if (selectedPlatform === "apple") {
+    //         setPlatformPlaylists(applePlaylists?.filter(playlist =>
+    //             playlist.attributes.name.toLowerCase().includes(searchQuery.toLowerCase())));
+    //     }
+    // }, [applePlaylists, searchQuery, selectedPlatform, spotifyPlaylists]);
 
     const hasPlaylists = platformPlaylists && platformPlaylists.length > 0;
 

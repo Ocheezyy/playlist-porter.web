@@ -15,7 +15,7 @@ interface SpotifyTempMap {
 
 interface SpotifySliceState {
     accessToken: string;
-    playlists: SpotifyPlaylist[];
+    playlists: SpotifyPlaylistData[];
     transfer: any[];
     loaded: boolean;
     likedSongData: SpotifyTrack[];

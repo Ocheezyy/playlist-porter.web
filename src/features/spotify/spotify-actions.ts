@@ -7,7 +7,7 @@ export function fetchSpotifyPlaylists(spotifyToken: string) {
     return getSpotifyPlaylists(spotifyToken)
         .then((response) => {
 
-            const playlistData: PlaylistData[] = [];
+            const playlistData: SpotifyPlaylistData[] = [];
             const likedSongData: LikedSongData[] = [];
             const tempMap: SpotifyTempMap = {};
 
@@ -25,7 +25,7 @@ export function fetchSpotifyPlaylists(spotifyToken: string) {
             // @ts-expect-error response array doesn't need typing
             response[0]
                 .forEach((responseItem: SpotifyPlaylist) => {
-                const curItem: PlaylistData = {
+                const curItem: SpotifyPlaylistData = {
                     name: responseItem.name,
                     no_of_songs: responseItem.tracks.total,
                     playlist_owner: responseItem.owner.display_name,
@@ -63,7 +63,7 @@ export function fetchSpotifyPlaylists(spotifyToken: string) {
                 likedSongData: likedSongData
             }));
         });
-};
+}
 
 
 
